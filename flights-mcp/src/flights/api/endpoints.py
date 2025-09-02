@@ -40,7 +40,7 @@ class OfferEndpoints:
                 "supplier_timeout": supplier_timeout
             }
 
-            async with httpx.AsyncClient(timeout=httpx.Timeout(60.0)) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(90.0)) as client:
                 self.logger.info(f"Creating offer request with data: {request_data}")
                 response = await client.post(
                     f"{self.base_url}/offer_requests",
@@ -73,7 +73,7 @@ class OfferEndpoints:
             if not offer_id.startswith("off_"):
                 raise ValueError("Invalid offer ID format - must start with 'off_'")
             
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as client:
                 response = await client.get(
                     f"{self.base_url}/offers/{offer_id}",
                     headers=self.headers

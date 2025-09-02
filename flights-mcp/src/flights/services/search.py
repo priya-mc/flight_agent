@@ -129,16 +129,25 @@ async def search_flights(params: FlightSearch) -> str:
                     }
                 })
         
-        # Use async context manager
+        # Use async context manager with better error handling
         async with _get_flight_client() as client:
-            response = await client.create_offer_request(
-                slices=slices,
-                cabin_class=params.cabin_class,
-                adult_count=params.adults,
-                max_connections=params.max_connections,
-                return_offers=True,
-                supplier_timeout=15000
-            )
+            try:
+                response = await client.create_offer_request(
+                    slices=slices,
+                    cabin_class=params.cabin_class,
+                    adult_count=params.adults,
+                    max_connections=params.max_connections,
+                    return_offers=True,
+                    supplier_timeout=30000  # Increased timeout
+                )
+            except Exception as api_error:
+                logger.error(f"Duffel API error: {str(api_error)}")
+                # Return a structured error response instead of raising
+                return json.dumps({
+                    "error": "Flight search failed",
+                    "message": str(api_error),
+                    "offers": []
+                }, indent=2)
         
         # Format the response
         formatted_response = {
@@ -199,14 +208,26 @@ async def get_offer_details(params: OfferDetails) -> str:
     """Get detailed information about a specific flight offer."""
     try:
         async with _get_flight_client() as client:
-            response = await client.get_offer(
-                offer_id=params.offer_id
-            )
-            return json.dumps(response, indent=2)
+            try:
+                response = await client.get_offer(
+                    offer_id=params.offer_id
+                )
+                return json.dumps(response, indent=2)
+            except Exception as api_error:
+                logger.error(f"Duffel API error getting offer details: {str(api_error)}")
+                return json.dumps({
+                    "error": "Failed to get offer details",
+                    "message": str(api_error),
+                    "offer_id": params.offer_id
+                }, indent=2)
             
     except Exception as e:
         logger.error(f"Error getting offer details: {str(e)}", exc_info=True)
-        raise
+        return json.dumps({
+            "error": "System error getting offer details",
+            "message": str(e),
+            "offer_id": params.offer_id
+        }, indent=2)
 
 @mcp.tool(name="search_multi_city")
 async def search_multi_city(params: MultiCityRequest) -> str:
@@ -222,16 +243,24 @@ async def search_multi_city(params: MultiCityRequest) -> str:
                 None
             ))
 
-        # Use async context manager with shorter timeout
+        # Use async context manager with better error handling
         async with _get_flight_client() as client:
-            response = await client.create_offer_request(
-                slices=slices,
-                cabin_class=params.cabin_class,
-                adult_count=params.adults,
-                max_connections=params.max_connections,
-                return_offers=True,
-                supplier_timeout=30000  # Increased timeout for multi-city
-            )
+            try:
+                response = await client.create_offer_request(
+                    slices=slices,
+                    cabin_class=params.cabin_class,
+                    adult_count=params.adults,
+                    max_connections=params.max_connections,
+                    return_offers=True,
+                    supplier_timeout=45000  # Increased timeout for multi-city
+                )
+            except Exception as api_error:
+                logger.error(f"Duffel API error in multi-city search: {str(api_error)}")
+                return json.dumps({
+                    "error": "Multi-city flight search failed",
+                    "message": str(api_error),
+                    "offers": []
+                }, indent=2)
         
             # Format response inside the context
             formatted_response = {

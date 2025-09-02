@@ -2,10 +2,10 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from typing import List, Dict
-
+import os
 from agents import OpenAIChatCompletionsModel, AsyncOpenAI
 # Load env for local runs
-load_dotenv('/Users/priyadwivedi/Documents/priya-exptts/jarvis/openai_sdk_deep_research/.env')
+load_dotenv('/Users/pdwivedi/Documents/Projects/flight_agent/.env')
 
 gpt_4_1 = OpenAIChatCompletionsModel( 
         model="gpt-4.1",
@@ -17,7 +17,7 @@ REASONING_EFFORT = 'low'
 
 ## Tracing using Logfire
 import logfire
-logfire.configure(token='pylf_v1_us_7KdmWMTct8mP4FxRNKSzXNPnysff2Stb4lG5cNZyLJXs', service_name='flight_scoping_agents')
+logfire.configure(token= os.getenv('LOGFIRE_TOKEN'), service_name='flight_scoping_agents')
 logfire.instrument_openai_agents()
 
 from prompts import (
@@ -57,9 +57,9 @@ clarify_agent = Agent(
 )
 
 
-async def clarify_with_user(messages: List[Dict[str, str]]) -> ClarifyWithUser:
+async def clarify_with_user(messages: List[Dict[str, str]], session=None) -> ClarifyWithUser:
     message_str=_format_messages(messages)
-    result = await Runner.run(clarify_agent, message_str)
+    result = await Runner.run(clarify_agent, message_str, session=session)
     return result.final_output_as(ClarifyWithUser)
 
 research_brief_agent = Agent(
@@ -70,9 +70,9 @@ research_brief_agent = Agent(
     output_type=FlightSearchBrief,
 )
 
-async def write_flight_search_brief(messages: List[Dict[str, str]]) -> FlightSearchBrief:
+async def write_flight_search_brief(messages: List[Dict[str, str]], session=None) -> FlightSearchBrief:
     message_str=_format_messages(messages)
-    result = await Runner.run(research_brief_agent, message_str)
+    result = await Runner.run(research_brief_agent, message_str, session=session)
     return result.final_output_as(FlightSearchBrief)
 
 

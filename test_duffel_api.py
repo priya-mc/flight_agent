@@ -12,7 +12,7 @@ import requests
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/Users/priyadwivedi/Documents/priya-exptts/jarvis/openai_sdk_deep_research/.env')
+load_dotenv('/Users/pdwivedi/Documents/Projects/flight_agent/.env')
 
 def test_duffel_api():
     """Test Duffel API with a basic flight search request."""

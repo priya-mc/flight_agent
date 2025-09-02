@@ -4,7 +4,7 @@ import os
 from typing import Final
 from dotenv import load_dotenv
 
-load_dotenv('/Users/priyadwivedi/Documents/priya-exptts/jarvis/openai_sdk_deep_research/.env')
+load_dotenv('/Users/pdwivedi/Documents/Projects/flight_agent/.env')
 
 # API Constants
 DUFFEL_API_URL: Final = "https://api.duffel.com"
